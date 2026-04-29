@@ -126,6 +126,7 @@ def filter_data():
         rows.append({
             "primary_id":     str(col_val(row, "primary_id", "") or ""),
             "selection_text": str(col_val(row, "selection_text", "") or ""),
+            "location":       str(col_val(row, "location", "") or ""),
             "in_service":     safe_float(col_val(row, "in_service")),
             "out_of_service": safe_float(col_val(row, "out_of_service")),
             "hard_faults":    safe_float(col_val(row, "hard_faults")),
@@ -137,12 +138,45 @@ def filter_data():
     out_svc_col = mapping.get("out_of_service")
     met_col     = mapping.get(metric)
 
+    in_svc_count = int((df[in_svc_col] > 0).sum()) if in_svc_col and in_svc_col in df.columns else 0
+
+    if met_col and met_col in df.columns:
+        severity = {
+            "critical": int((df[met_col] >= 100).sum()),
+            "high":     int(((df[met_col] >= 75) & (df[met_col] < 100)).sum()),
+            "medium":   int(((df[met_col] >= 50) & (df[met_col] < 75)).sum()),
+            "low":      int(((df[met_col] > 0)   & (df[met_col] < 50)).sum()),
+        }
+    else:
+        severity = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+
+    def mavg(field):
+        col = mapping.get(field)
+        return round(df[col].mean(), 2) if col and col in df.columns else 0
+
+    def missues(field):
+        col = mapping.get(field)
+        return int((df[col] > 0).sum()) if col and col in df.columns else 0
+
     stats = {
-        "total":           total,
-        "avg_in_service":  round(df[in_svc_col].mean(), 2)  if in_svc_col  and in_svc_col  in df.columns else 0,
-        "avg_out_service": round(df[out_svc_col].mean(), 2) if out_svc_col and out_svc_col in df.columns else 0,
-        "metric_issues":   int((df[met_col] > 0).sum())     if met_col     and met_col     in df.columns else 0,
-        "metric_avg":      round(df[met_col].mean(), 2)     if met_col     and met_col     in df.columns else 0,
+        "total":              total,
+        "avg_in_service":     round(df[in_svc_col].mean(), 2)  if in_svc_col  and in_svc_col  in df.columns else 0,
+        "avg_out_service":    round(df[out_svc_col].mean(), 2) if out_svc_col and out_svc_col in df.columns else 0,
+        "metric_issues":      int((df[met_col] > 0).sum())     if met_col     and met_col     in df.columns else 0,
+        "metric_avg":         round(df[met_col].mean(), 2)     if met_col     and met_col     in df.columns else 0,
+        "in_service_count":   in_svc_count,
+        "out_service_count":  total - in_svc_count,
+        "severity_breakdown": severity,
+        "metric_averages": {
+            "hard_faults": mavg("hard_faults"),
+            "supply_out":  mavg("supply_out"),
+            "comms":       mavg("comms"),
+        },
+        "metric_issues_all": {
+            "hard_faults": missues("hard_faults"),
+            "supply_out":  missues("supply_out"),
+            "comms":       missues("comms"),
+        },
     }
 
     return jsonify({
