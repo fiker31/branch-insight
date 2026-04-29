@@ -48,7 +48,7 @@ export default function Charts({ stats }) {
               startAngle={90} endAngle={-270}
               dataKey="value"
               strokeWidth={2}
-              stroke="rgb(var(--c-surface))"
+              stroke="var(--c-surface)"
             >
               {pieData.map((entry, i) => (
                 <Cell key={i} fill={entry.color} />

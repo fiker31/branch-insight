@@ -117,7 +117,7 @@ export default function DataTable({ rows, metric, page, pageSize, total }) {
                 const loc         = row.location || "";
                 const metColor    = metricValue >= 75 ? "#FF5A72" : metricValue >= 25 ? "#F0B429" : "#22C87A";
                 return (
-                  <tr key={i} className="border-b border-bdr last:border-0 hover:bg-surface2/50 transition-colors">
+                  <tr key={i} className="border-b border-bdr last:border-0 hover:bg-surface2 transition-colors">
                     <td className="px-4 py-4 text-texttri text-xs font-mono w-12">{n}</td>
 
                     <td className="px-4 py-4">

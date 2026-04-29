@@ -6,55 +6,53 @@
 
 /* ── Dark theme (default) ── */
 :root {
-  --c-bg:      10 11 14;
-  --c-surface: 17 19 24;
-  --c-surf2:   26 29 38;
-  --c-surf3:   34 38 49;
-  --c-bdr:     42 46 62;
-  --c-bdr2:    54 60 82;
-  --c-textpri: 240 242 248;
-  --c-textsec: 155 163 194;
-  --c-texttri: 92 100 128;
-
-  /* full values for SVG / recharts inline styles */
-  --v-surf2:   #1A1D26;
-  --v-bdr:     #2A2E3E;
-  --v-textpri: #F0F2F8;
-  --v-texttri: #5C6480;
+  --c-bg:      #0A0B0E;
+  --c-surface: #111318;
+  --c-surf2:   #1A1D26;
+  --c-surf3:   #222631;
+  --c-bdr:     #2A2E3E;
+  --c-bdr2:    #363C52;
+  --c-textpri: #F0F2F8;
+  --c-textsec: #9BA3C2;
+  --c-texttri: #5C6480;
 }
 
 /* ── Light theme ── */
 .light {
-  --c-bg:      244 246 252;
-  --c-surface: 255 255 255;
-  --c-surf2:   237 240 250;
-  --c-surf3:   226 230 244;
-  --c-bdr:     210 215 235;
-  --c-bdr2:    188 196 220;
-  --c-textpri: 20 24 46;
-  --c-textsec: 68 78 128;
-  --c-texttri: 130 140 176;
-
-  --v-surf2:   #EDF0FA;
-  --v-bdr:     #D2D7EB;
-  --v-textpri: #14182E;
-  --v-texttri: #828CB0;
+  --c-bg:      #F0F4FA;
+  --c-surface: #FFFFFF;
+  --c-surf2:   #EBEEf8;
+  --c-surf3:   #DDE2F0;
+  --c-bdr:     #CDD3E8;
+  --c-bdr2:    #B8C0D8;
+  --c-textpri: #14182E;
+  --c-textsec: #3E4870;
+  --c-texttri: #7A85AD;
 }
 
 @layer base {
-  html { height: 100%; }
+  html {
+    height: 100%;
+  }
 
   body {
     height: 100%;
-    background-color: rgb(var(--c-bg));
-    color: rgb(var(--c-textpri));
+    background-color: var(--c-bg);
+    color: var(--c-textpri);
     font-family: "DM Sans", sans-serif;
-    transition: background-color 0.2s, color 0.2s;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* style native select options to match theme */
+  /* native select options follow theme */
   option {
-    background-color: var(--v-surf2);
-    color: var(--v-textpri);
+    background-color: var(--c-surf2);
+    color: var(--c-textpri);
   }
+}
+
+/* smooth theme transition on all elements */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
 }

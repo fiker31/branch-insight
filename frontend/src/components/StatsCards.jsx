@@ -9,7 +9,7 @@ function RingGauge({ pct, color, size = 80 }) {
   const c    = size / 2;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={c} cy={c} r={r} fill="none" stroke="rgb(var(--c-surf3))" strokeWidth="6" />
+      <circle cx={c} cy={c} r={r} fill="none" stroke="var(--c-surf3)" strokeWidth="6" />
       <circle
         cx={c} cy={c} r={r} fill="none"
         stroke={color} strokeWidth="6"
@@ -125,7 +125,7 @@ function ServiceDistCard({ stats }) {
               innerRadius={33} outerRadius={50}
               startAngle={90} endAngle={-270}
               dataKey="value" strokeWidth={2}
-              stroke="rgb(var(--c-surface))"
+              stroke="var(--c-surface)"
             >
               <Cell fill="#22C87A" />
               <Cell fill={pieData.length > 1 ? "#FF5A72" : "#222631"} />
