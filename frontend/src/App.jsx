@@ -5,6 +5,7 @@ import FilterBar from "./components/FilterBar";
 import StatsCards from "./components/StatsCards";
 import Charts from "./components/Charts";
 import DataTable from "./components/DataTable";
+import IncidentsTab from "./components/IncidentsTab";
 
 const PAGE_SIZE = 12;
 
@@ -77,8 +78,57 @@ function ThemeToggle({ isDark, onToggle }) {
   );
 }
 
+/* ── Top-level tab bar (always visible) ──────────────────── */
+const TABS = [
+  { id: "atm",       label: "ATM Performance" },
+  { id: "incidents", label: "Incidents" },
+];
+
+function TabBar({ active, onChange, isDark, onToggle }) {
+  return (
+    <div className="flex items-center justify-between px-6 border-b border-bdr bg-surface flex-shrink-0">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 py-3 pr-2">
+          <svg width="18" height="18" viewBox="0 0 20 20">
+            <path d="M10 2L2 17h16L10 2z" fill="#4F6EF7" />
+          </svg>
+          <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-textpri">
+            Branch <span className="text-accent">Insight</span>
+          </span>
+        </div>
+        <nav className="flex items-center gap-1">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => onChange(t.id)}
+              className={`relative px-3 py-3 text-sm font-medium transition-colors ${
+                active === t.id ? "text-accent" : "text-texttri hover:text-textsec"
+              }`}
+            >
+              {t.label}
+              {active === t.id && (
+                <span className="absolute left-0 right-0 bottom-0 h-[2px] bg-accent rounded-full" />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+      <ThemeToggle isDark={isDark} onToggle={onToggle} />
+    </div>
+  );
+}
+
 /* ── App ─────────────────────────────────────────────────── */
 export default function App() {
+  const [activeTab, setActiveTab] = useState("atm");
+  const [incidentsKey, setIncidentsKey] = useState(0);
+
+  // Clicking the Incidents tab always returns to the form (resets the report).
+  function handleTab(id) {
+    if (id === "incidents") setIncidentsKey((k) => k + 1);
+    setActiveTab(id);
+  }
+
   const [file, setFile]         = useState(null);
   const [districts, setDistricts] = useState([]);
   const [filters, setFilters]   = useState({ district: "", metric: "hard_faults", order: "desc", page: 1 });
@@ -142,100 +192,99 @@ export default function App() {
     setError("");
   }
 
-  if (!file) return <UploadScreen onUpload={handleUpload} />;
-
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-bg">
 
-      {/* ── Top bar ── */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-bdr bg-surface flex-shrink-0 gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <svg width="18" height="18" viewBox="0 0 20 20">
-              <path d="M10 2L2 17h16L10 2z" fill="#4F6EF7" />
-            </svg>
-            <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-textpri">
-              Branch <span className="text-accent">Insight</span>
-            </span>
+      {/* ── Top-level tabs ── */}
+      <TabBar active={activeTab} onChange={handleTab} isDark={isDark} onToggle={toggleTheme} />
+
+      {activeTab === "incidents" ? (
+        <IncidentsTab key={incidentsKey} />
+      ) : !file ? (
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <UploadScreen onUpload={handleUpload} />
+        </div>
+      ) : (
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+
+          {/* ── File bar ── */}
+          <div className="flex items-center justify-between px-6 py-3 border-b border-bdr bg-surface flex-shrink-0 gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-1.5 bg-surface2 border border-bdr2 rounded-lg px-2.5 py-1 text-xs font-mono max-w-[220px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#22C87A] flex-shrink-0" />
+                <span className="text-textsec truncate">{file.name}</span>
+              </div>
+
+              {result && (
+                <span className="text-xs text-texttri flex-shrink-0">
+                  {result.total} records · {districts.length} district{districts.length !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={handleReset}
+              className="flex items-center gap-1.5 bg-accent hover:bg-accent2 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors flex-shrink-0"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+              </svg>
+              Upload new file
+            </button>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-surface2 border border-bdr2 rounded-lg px-2.5 py-1 text-xs font-mono max-w-[220px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#22C87A] flex-shrink-0" />
-            <span className="text-textsec truncate">{file.name}</span>
-          </div>
+          {/* ── Filter bar ── */}
+          <FilterBar districts={districts} filters={filters} onChange={handleFilterChange} />
 
+          {/* ── Cards row — stationary ── */}
           {result && (
-            <span className="text-xs text-texttri flex-shrink-0">
-              {result.total} records · {districts.length} district{districts.length !== 1 ? "s" : ""}
-            </span>
+            <div className={`px-5 pt-5 pb-4 flex-shrink-0 transition-opacity duration-150 ${loading ? "opacity-50 pointer-events-none" : ""}`}>
+              <div className="grid grid-cols-4 gap-4">
+                <StatsCards stats={result.stats} />
+                <Charts     stats={result.stats} />
+              </div>
+            </div>
+          )}
+
+          {/* ── Table — scrollable ── */}
+          <div className="flex-1 overflow-y-auto px-5 pb-5">
+            {error && (
+              <div className="text-sm text-[#FF5A72] bg-[#FF5A72]/10 border border-[#FF5A72]/20 rounded-lg px-4 py-2 mb-4">
+                {error}
+              </div>
+            )}
+
+            {loading && !result && (
+              <div className="flex items-center gap-2 text-texttri text-sm py-12">
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-bdr2 border-t-accent rounded-full" />
+                Loading…
+              </div>
+            )}
+
+            {result && (
+              <div className={`transition-opacity duration-150 ${loading ? "opacity-50 pointer-events-none" : ""}`}>
+                <DataTable
+                  rows={result.rows}
+                  metric={filters.metric}
+                  page={filters.page}
+                  pageSize={PAGE_SIZE}
+                  total={result.total}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ── Pagination ── */}
+          {result && result.total_pages > 1 && (
+            <Pagination
+              page={filters.page}
+              totalPages={result.total_pages}
+              total={result.total}
+              pageSize={PAGE_SIZE}
+              onPage={(p) => handleFilterChange({ ...filters, page: p })}
+            />
           )}
         </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
-
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-1.5 bg-accent hover:bg-accent2 text-white text-xs font-semibold rounded-lg px-3 py-1.5 transition-colors"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-            </svg>
-            Upload new file
-          </button>
-        </div>
-      </div>
-
-      {/* ── Filter bar ── */}
-      <FilterBar districts={districts} filters={filters} onChange={handleFilterChange} />
-
-      {/* ── Cards row — stationary ── */}
-      {result && (
-        <div className={`px-5 pt-5 pb-4 flex-shrink-0 transition-opacity duration-150 ${loading ? "opacity-50 pointer-events-none" : ""}`}>
-          <div className="grid grid-cols-4 gap-4">
-            <StatsCards stats={result.stats} />
-            <Charts     stats={result.stats} />
-          </div>
-        </div>
-      )}
-
-      {/* ── Table — scrollable ── */}
-      <div className="flex-1 overflow-y-auto px-5 pb-5">
-        {error && (
-          <div className="text-sm text-[#FF5A72] bg-[#FF5A72]/10 border border-[#FF5A72]/20 rounded-lg px-4 py-2 mb-4">
-            {error}
-          </div>
-        )}
-
-        {loading && !result && (
-          <div className="flex items-center gap-2 text-texttri text-sm py-12">
-            <span className="animate-spin inline-block w-4 h-4 border-2 border-bdr2 border-t-accent rounded-full" />
-            Loading…
-          </div>
-        )}
-
-        {result && (
-          <div className={`transition-opacity duration-150 ${loading ? "opacity-50 pointer-events-none" : ""}`}>
-            <DataTable
-              rows={result.rows}
-              metric={filters.metric}
-              page={filters.page}
-              pageSize={PAGE_SIZE}
-              total={result.total}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* ── Pagination ── */}
-      {result && result.total_pages > 1 && (
-        <Pagination
-          page={filters.page}
-          totalPages={result.total_pages}
-          total={result.total}
-          pageSize={PAGE_SIZE}
-          onPage={(p) => handleFilterChange({ ...filters, page: p })}
-        />
       )}
     </div>
   );
