@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PieChart, Pie, Cell } from "recharts";
+import bankLogo from "../assets/bank_of_abyssinia.png";
 
 /* Incident types — order = slice / column order in the report. */
 const INCIDENT_TYPES = [
@@ -130,7 +131,7 @@ function ReportInfographic({ report }) {
             {/* Bank logo (PNG) */}
             <div className="hidden lg:flex items-center bg-white rounded-xl px-5 py-3 flex-shrink-0">
               <img
-                src="/bank_of_abyssinia.png"
+                src={bankLogo}
                 alt="Bank of Abyssinia"
                 className="h-14 w-auto object-contain"
               />
